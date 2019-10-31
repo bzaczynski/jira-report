@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "jira-report"
+version = "0.1.0"
+description = "Generate a monthly .xls report of Jira tasks assigned to me"
+authors = ["Bartosz Zaczyński <bartosz.zaczynski@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+environs = "^6.0"
+jira = "^2.0"
+xlwt = "^1.3"
+python-dateutil = "^2.8"
+
+[tool.poetry.dev-dependencies]
+pytest = "^3.0"
+
+[tool.poetry.scripts]
+jira-report = 'jira_report.cli:run'
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
+
