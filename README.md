@@ -62,4 +62,10 @@ Generate a report for a different month:
 $ poetry run jira-report --month 2019/10
 ```
 
+### Example #3
 
+Generate a report for a different month and a custom number of business days:
+
+```shell
+$ poetry run jira-report --month 2019/10 --days 9
+```

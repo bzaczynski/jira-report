@@ -4,7 +4,7 @@
 Generate a monthly .xls report of Jira tasks assigned to me.
 
 Usage:
-$ poetry run jira-report [--month 2019/10] [--force-overwrite]
+$ poetry run jira-report [--month 2019/10] [--days 21] [--force-overwrite]
 
 Configuration:
 $ echo 'JIRA_SERVER_URL="https://mycompany.atlassian.net"' >> .env
@@ -106,7 +106,7 @@ def find_issues(date: datetime.date, config: Dict[str, str]) -> jira.client.Resu
     """Return a list of Jira issues for the given month."""
     logging.info('Querying Jira...')
     api = jira.JIRA(**config)
-    return api.search_issues(jql(date), expand='renderedFields')
+    return api.search_issues(jql(date))
 
 
 def jql(date: datetime.date) -> str:
@@ -128,7 +128,7 @@ def month_hours(date: datetime.date, business_days: Optional[int]) -> int:
     if business_days is None:
         start_date = datetime.date(date.year, date.month, 1)
         end_date = datetime.date(date.year, date.month, month_days(date))
-        business_days = workdays.networkdays(start_date, end_date) * 8
+        business_days = workdays.networkdays(start_date, end_date)
 
     LOGGER.info('Business days=%d (%d hours)', business_days, business_days * 8)
 
@@ -136,10 +136,24 @@ def month_hours(date: datetime.date, business_days: Optional[int]) -> int:
 
 
 def xls_export(issues: List[jira.Issue],
-               month_hours: int,
+               hours: int,
                title: str,
                filename: str) -> None:
     """Save Jira issues to a spreadsheet file."""
+
+    class Styles:
+        """A class whose attributes represent different styles."""
+
+        bold = xlwt.easyxf('font: bold on; align: vert centre')
+        middle = xlwt.easyxf('align: vert centre')
+
+        date_format = xlwt.easyxf('align: vert centre, horiz left')
+        date_format.num_format_str = 'yyyy-mm-dd, HH:MM'
+
+        hours_format = xlwt.easyxf('align: vert centre, horiz right')
+        hours_format.num_format_str = '#,#0.0 "h"'
+
+        invisible = xlwt.easyxf('align: vert centre; font: color white')
 
     workbook = xlwt.Workbook(encoding='utf-8')
     sheet = workbook.add_sheet(title)
@@ -157,34 +171,25 @@ def xls_export(issues: List[jira.Issue],
         'Worklog',
     )
 
-    bold = xlwt.easyxf('font: bold on; align: vert centre')
+    styles = Styles()
+
     for column, header in enumerate(column_headers):
-        write(sheet, 0, column, header, bold)
+        write(sheet, 0, column, header, styles.bold)
         sheet.row(0).height = row_height
-
-    middle = xlwt.easyxf('align: vert centre')
-
-    date_format = xlwt.easyxf('align: vert centre, horiz left')
-    date_format.num_format_str = 'yyyy-mm-dd, HH:MM'
-
-    hours_format = xlwt.easyxf('align: vert centre, horiz right')
-    hours_format.num_format_str = '#,#0.0 "h"'
-
-    invisible = xlwt.easyxf('align: vert centre; font: color white')
 
     for row, issue in enumerate(issues, 1):
         sheet.row(row).height = row_height
-        write(sheet, row, 0, issue.id, middle)
-        write(sheet, row, 1, issue.key, middle)
-        write(sheet, row, 2, make_link(issue.permalink()), middle)
-        write(sheet, row, 3, issue.fields.project.name, middle)
-        write(sheet, row, 4, issue.fields.creator.displayName, middle)
-        write(sheet, row, 5, make_datetime(issue.fields.created), date_format)
-        write(sheet, row, 6, issue.fields.summary, middle)
-        sheet.write(row, 7, hours_worked(row, issues), hours_format)
-        write(sheet, row, 8, story_points(issue), invisible)
+        write(sheet, row, 0, issue.id, styles.middle)
+        write(sheet, row, 1, issue.key, styles.middle)
+        write(sheet, row, 2, make_link(issue.permalink()), styles.middle)
+        write(sheet, row, 3, issue.fields.project.name, styles.middle)
+        write(sheet, row, 4, issue.fields.creator.displayName, styles.middle)
+        write(sheet, row, 5, make_datetime(issue.fields.created), styles.date_format)
+        write(sheet, row, 6, issue.fields.summary, styles.middle)
+        sheet.write(row, 7, hours_worked(row, issues), styles.hours_format)
+        write(sheet, row, 8, story_points(issue), styles.invisible)
 
-    write(sheet, 0, 8, month_hours, invisible)
+    write(sheet, 0, 8, hours, styles.invisible)
 
     workbook.save(filename)
     logging.info('Exported file: "%s"', os.path.join(os.getcwd(), filename))
