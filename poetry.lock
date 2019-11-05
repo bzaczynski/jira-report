@@ -242,6 +242,14 @@ version = "1.25.6"
 
 [[package]]
 category = "main"
+description = "Workday date utility functions to extend python's datetime"
+name = "workdays"
+optional = false
+python-versions = "*"
+version = "1.4"
+
+[[package]]
+category = "main"
 description = "Library to create spreadsheet files compatible with MS Excel 97/2000/XP/2003 XLS files, on any platform, with Python 2.6, 2.7, 3.3+"
 name = "xlwt"
 optional = false
@@ -261,7 +269,7 @@ version = "0.6.0"
 more-itertools = "*"
 
 [metadata]
-content-hash = "4fee0b539cd121fdcf1c083c7abf9d4e12223b811e59d69f1a2d3a5e91bd3d98"
+content-hash = "8713d4f3b4666236e054f0c7cc731b5f2aa427a577d77bd8b935e30384b9febe"
 python-versions = "^3.7"
 
 [metadata.hashes]
@@ -289,5 +297,6 @@ requests-oauthlib = ["bd6533330e8748e94bf0b214775fed487d309b8b8fe823dc45641ebcd9
 requests-toolbelt = ["380606e1d10dc85c3bd47bf5a6095f815ec007be7a8b69c878507068df059e6f", "968089d4584ad4ad7c171454f0a5c6dac23971e9472521ea3b6d49d610aa6fc0"]
 six = ["3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c", "d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73"]
 urllib3 = ["3de946ffbed6e6746608990594d08faac602528ac7015ac28d33cee6a45b7398", "9a107b99a5393caf59c7aa3c1249c16e6879447533d0887f4336dde834c7be86"]
+workdays = ["0f6cbaf1bba2c3ab2f7e14d8a84582b79e7de4e2ae3e486954724435e55af230"]
 xlwt = ["a082260524678ba48a297d922cc385f58278b8aa68741596a87de01a9c628b2e", "c59912717a9b28f1a3c2a98fd60741014b06b043936dcecbc113eaaada156c88"]
 zipp = ["3718b1cbcd963c7d4c5511a8240812904164b7f381b647143a89d3b98f9bcd8e", "f06903e9f1f43b12d371004b4ac7b06ab39a44adc747266928ae6debfa7b3335"]
