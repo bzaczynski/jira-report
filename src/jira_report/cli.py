@@ -165,7 +165,6 @@ def xls_export(issues: List[jira.Issue],
         'Task Key',
         'Task URL',
         'Project Name',
-        'Created By',
         'Created At',
         'Description',
         'Worklog',
@@ -183,13 +182,12 @@ def xls_export(issues: List[jira.Issue],
         write(sheet, row, 1, issue.key, styles.middle)
         write(sheet, row, 2, make_link(issue.permalink()), styles.middle)
         write(sheet, row, 3, issue.fields.project.name, styles.middle)
-        write(sheet, row, 4, issue.fields.creator.displayName, styles.middle)
-        write(sheet, row, 5, make_datetime(issue.fields.created), styles.date_format)
-        write(sheet, row, 6, issue.fields.summary, styles.middle)
-        sheet.write(row, 7, hours_worked(row, issues), styles.hours_format)
-        write(sheet, row, 8, story_points(issue), styles.invisible)
+        write(sheet, row, 4, make_datetime(issue.fields.created), styles.date_format)
+        write(sheet, row, 5, issue.fields.summary, styles.middle)
+        sheet.write(row, 6, hours_worked(row, issues), styles.hours_format)
+        write(sheet, row, 7, story_points(issue), styles.invisible)
 
-    write(sheet, 0, 8, hours, styles.invisible)
+    write(sheet, 0, 7, hours, styles.invisible)
 
     workbook.save(filename)
     logging.info('Exported file: "%s"', os.path.join(os.getcwd(), filename))
@@ -225,4 +223,4 @@ def story_points(issue: jira.Issue) -> Optional[float]:
 
 def hours_worked(row: int, issues: List) -> xlwt.Formula:
     """Return a math formula to calculate the number of hours worked on an issue."""
-    return xlwt.Formula(f'I{row + 1}/SUM(I2:I{len(issues) + 1})*I1')
+    return xlwt.Formula(f'H{row + 1}/SUM(H2:H{len(issues) + 1})*H1')
