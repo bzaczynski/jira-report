@@ -43,7 +43,7 @@ Alternatively, the script will show an interactive prompt to generate this file 
 The command:
 
 ```shell
-$ poetry run jira-report [--month YYYY/MM] [--force-overwrite]
+$ poetry run jira-report [--month YYYY/MM] [--days N] [--force-overwrite]
 ```
 
 ### Example #1
