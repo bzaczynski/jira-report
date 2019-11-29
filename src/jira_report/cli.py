@@ -27,7 +27,7 @@ import jira
 import workdays
 import xlwt
 
-logging.basicConfig(format='%(message)s', level=logging.INFO)
+logging.basicConfig(format='[%(levelname)s] %(message)s', level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
 
@@ -218,7 +218,11 @@ def make_link(url: str) -> xlwt.Formula:
 
 def story_points(issue: jira.Issue) -> Optional[float]:
     """Return the number of story points of None."""
-    return issue.fields.customfield_10020
+    try:
+        return issue.fields.customfield_10020
+    except AttributeError:
+        logging.warning('No story points assigned to %s', issue.key)
+        return None
 
 
 def hours_worked(row: int, issues: List) -> xlwt.Formula:
