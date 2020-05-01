@@ -4,7 +4,7 @@
 Generate a monthly .xls report of Jira tasks assigned to me.
 
 Usage:
-$ poetry run jira-report [--month 2019/10] [--days 21] [--force-overwrite]
+$ poetry run jira-report [--month 2019/10] [--days 21] [--force-overwrite] [--blacklist <path>]
 
 Configuration:
 $ echo 'JIRA_SERVER_URL="https://mycompany.atlassian.net"' >> .env
@@ -19,6 +19,7 @@ import calendar
 import datetime
 import logging
 import os
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import dateutil.parser
@@ -35,6 +36,8 @@ def run() -> None:
     """Command wrapper for Poetry."""
     try:
         main(parse_args())
+    except ValueError as ex:
+        LOGGER.error(str(ex))
     except KeyboardInterrupt:
         LOGGER.warning('Aborted')
 
@@ -48,7 +51,7 @@ def main(args: argparse.Namespace) -> None:
     if os.path.exists(filename) and not args.force_overwrite:
         LOGGER.error('File already exists: "%s", use the -f flag to overwrite', filename)
     else:
-        issues = find_issues(args.date, jira_config())
+        issues = blacklist(args.blacklist, find_issues(args.date, jira_config()))
         if len(issues) > 0:
             LOGGER.info('Found %d tasks assigned to you during that period.', len(issues))
             xls_export(issues, month_hours(args.date, args.business_days), title, filename)
@@ -66,12 +69,44 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--force-overwrite', action='store_true', default=False)
     parser.add_argument('-d', '--days', dest='business_days', type=int)
+    parser.add_argument('-b', '--blacklist')
     parser.add_argument('--month',
                         metavar='YYYY/MM',
                         dest='date',
                         type=parse_month,
                         default=datetime.date.today())
-    return parser.parse_args()
+
+    args = parser.parse_args()
+
+    if args.blacklist is not None:
+        args.blacklist = Path(args.blacklist)
+        if not (args.blacklist.exists() and args.blacklist.is_file()):
+            raise ValueError(f'"{args.blacklist}" is not a valid path')
+
+    return args
+
+
+def blacklist(blacklist_path: Optional[Path], issues: List[jira.Issue]) -> List[jira.Issue]:
+    """Filter out blacklisted issues."""
+
+    if blacklist_path is None:
+        return issues
+
+    LOGGER.info('Using blacklist from: %s', blacklist_path.resolve())
+    blacklisted = [x.strip() for x in blacklist_path.read_text().split('\n') if x != '']
+
+    skipped = 0
+    filtered_issues = []
+    for issue in issues:
+        if issue.key in blacklisted:
+            skipped += 1
+        else:
+            filtered_issues.append(issue)
+
+    if skipped > 0:
+        LOGGER.info('Skipped %d blacklisted issues', skipped)
+
+    return filtered_issues
 
 
 def jira_config() -> Dict[str, str]:
