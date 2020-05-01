@@ -4,10 +4,10 @@ Generate a monthly `.xls` report of [Jira](https://jira.atlassian.com/) tasks as
 
 ## Prerequisites
 
-Install [poetry](https://poetry.eustace.io/):
+Install [poetry](https://python-poetry.org/):
 
 ```shell
-$ curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+$ curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
 ```
 
 ## Installation
